@@ -114,6 +114,10 @@ app = FastAPI(
     title="Agent Builder System V5",
     description="Dynamic AI Agent Builder with LangGraph Orchestration, MCP Tools, and Skill Creation",
     version="5.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
+    swagger_ui_parameters={"persistAuthorization": True, "theme": "dark"},
     lifespan=lifespan,
 )
 

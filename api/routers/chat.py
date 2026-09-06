@@ -44,7 +44,7 @@ agent_configs: dict[str, dict] = {}
 # Track last-activity timestamps for TTL eviction (keyed same as conversations)
 _session_timestamps: dict[str, float] = {}
 
-DEFAULT_MODEL = os.getenv("DEEPAGENT_MODEL", os.getenv("DEFAULT_CHAT_MODEL", "gemini-3.1-flash-lite-preview"))
+DEFAULT_MODEL = os.getenv("DEEPAGENT_MODEL", os.getenv("DEFAULT_CHAT_MODEL", "ollama:qwen2.5:7b"))
 
 
 def _session_key(task_id: str, conversation_id: str) -> str:
@@ -118,19 +118,23 @@ def _resolve_model(request_model: str | None, config_model: str, llm_provider: s
     Resolve which model to use based on request, config, and provider.
     Supports: gemini, ollama, openrouter.
     """
-    if request_model:
-        return request_model
-
     if llm_provider == "ollama":
-        ollama_model = os.getenv("OLLAMA_MODEL", "qwen3.5:4b-q4_K_M")
+        ollama_model = request_model or os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+        if ollama_model.startswith("ollama:"):
+            return ollama_model
         return f"ollama:{ollama_model}"
 
     if llm_provider == "ollama_remote":
-        remote_model = os.getenv("OLLAMA_REMOTE_MODEL", "qwen3.5:4b")
+        remote_model = request_model or os.getenv("OLLAMA_REMOTE_MODEL", "qwen2.5:7b")
+        if remote_model.startswith("ollama_remote:"):
+            return remote_model
         return f"ollama_remote:{remote_model}"
 
+    if request_model:
+        return request_model
+
     if llm_provider == "gemini" or os.getenv("GOOGLE_API_KEY", "").strip():
-        return os.getenv("DEEPAGENT_MODEL", "gemini-3.1-flash-lite-preview")
+        return os.getenv("DEEPAGENT_MODEL", "ollama:qwen2.5:7b")
 
     # Use the model from build config
     return config_model or DEFAULT_MODEL
@@ -252,7 +256,7 @@ async def get_agent_info(task_id: str, db: AsyncSession = Depends(get_db)):
     config_required = await mcp_config_required_for_modal(db, selected_mcps)
 
     stored_model = agent.get("assigned_openrouter_model", "unknown")
-    gemini_model = os.getenv("DEEPAGENT_MODEL", "gemini-2.0-flash-lite")
+    gemini_model = os.getenv("DEEPAGENT_MODEL", "gemini-2.5-flash-lite")
 
     return {
         "task_id": task_id,

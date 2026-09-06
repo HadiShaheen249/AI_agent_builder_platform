@@ -4,14 +4,18 @@ export const FETCH_TIMEOUT_MS = 30_000
 export const OPENROUTER_MODELS = [
   { value: '', label: 'Auto-select (recommended)' },
   { value: 'google/gemma-3-27b-it:free', label: 'Gemma 3 27B (Free)' },
+  { value: 'qwen/qwen-2.5-7b-instruct:free', label: 'Qwen 2.5 7B Instruct (Free)' },
   { value: 'meta-llama/llama-3.1-8b-instruct:free', label: 'Llama 3.1 8B (Free)' },
-  { value: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet' },
-  { value: 'openai/gpt-4o', label: 'GPT-4o' },
+  { value: 'openai/gpt-4o-mini', label: 'GPT-4o Mini' },
 ] as const
 
 export const GEMINI_MODELS = [
-  { value: 'gemini-3.1-flash-lite-preview', label: 'Gemini 3.1 Flash Lite (Preview)' },
-  { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
+  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+] as const
+
+export const OLLAMA_MODELS = [
+  { value: 'qwen2.5:7b', label: 'Qwen 2.5 7B (local)' },
 ] as const
 
 export const LLM_PROVIDERS = [

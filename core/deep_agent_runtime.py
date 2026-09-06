@@ -52,7 +52,7 @@ def _lazy_imports():
 # Environment Configuration
 # -----------------------------------------------
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "").strip()
-DEEPAGENT_MODEL = os.getenv("DEEPAGENT_MODEL", "gemini-3.1-flash-lite-preview")
+DEEPAGENT_MODEL = os.getenv("DEEPAGENT_MODEL", "ollama:qwen2.5:7b")
 DEEPAGENT_TEMPERATURE = float(os.getenv("DEEPAGENT_TEMPERATURE", "0.2"))
 
 SKILLS_DIR = os.getenv("SKILLS_DIR", os.path.join(os.path.dirname(__file__), "..", "skills", "skills"))
@@ -114,7 +114,7 @@ def _is_openrouter_model(model: str) -> bool:
 
 
 # Canonical safe fallback models per provider
-_GEMINI_SAFE_MODEL = os.getenv("DEEPAGENT_MODEL", "gemini-2.0-flash-lite")
+_GEMINI_SAFE_MODEL = os.getenv("DEEPAGENT_MODEL", "gemini-2.5-flash-lite")
 _OPENROUTER_SAFE_MODEL = "meta-llama/llama-3.1-8b-instruct:free"
 
 
@@ -237,10 +237,13 @@ def resolve_skill_paths(skill_ids: list[str] | None = None) -> list[str]:
     """
     base = _resolve_skills_dir()
 
-    if not skill_ids:
+    if skill_ids is None:
         # Return the parent dir — DeepAgent scans subdirectories for SKILL.md
         if os.path.isdir(base):
             return [base + "/"]
+        return []
+
+    if not skill_ids:
         return []
 
     paths: list[str] = []
@@ -253,10 +256,7 @@ def resolve_skill_paths(skill_ids: list[str] | None = None) -> list[str]:
             logger.warning("[DeepAgent] Skill '%s' not found at %s", sid, skill_dir)
 
     if not paths:
-        # Fallback: load all skills
-        if os.path.isdir(base):
-            logger.info("[DeepAgent] No specific skills found, loading all from %s", base)
-            return [base + "/"]
+        return []
 
     return paths
 
@@ -293,7 +293,7 @@ async def run_deep_agent(
         history: Previous conversation messages [{role, content}, ...]
         mcp_tools: Pre-loaded LangChain tools from MCP adapter (optional)
         skill_ids: List of skill IDs to load (optional, loads all if empty)
-        model: Override model (e.g. "ollama:qwen3.5:4b", "gemini-3.1-flash")
+        model: Override model (e.g. "ollama:qwen2.5:7b", "gemini-2.5-flash")
         workspace_dir: Override workspace directory for sandboxing
 
     Returns:
@@ -382,6 +382,23 @@ async def run_deep_agent(
 
         # Extract final response from DeepAgent output
         final_response = _extract_response(result)
+
+        if final_response == "(Agent returned no text response)" and effective_model.startswith("ollama:"):
+            from core.ollama_client import ollama_chat_completion
+
+            local_messages = [{"role": "system", "content": system_prompt}]
+            local_messages.extend(
+                {"role": role, "content": content}
+                for role, content in messages
+            )
+            direct_result = await ollama_chat_completion(
+                messages=local_messages,
+                model_tag=effective_model.split(":", 1)[1],
+                temperature=DEEPAGENT_TEMPERATURE,
+            )
+            final_response = direct_result["choices"][0]["message"].get("content", "").strip()
+            if not final_response:
+                raise RuntimeError("Local Ollama returned an empty response")
 
         # Extract tool calls from the execution trace
         tool_calls_log = _extract_tool_calls(result)
@@ -480,7 +497,7 @@ def _extract_response(result: dict) -> str:
         
         # 1. LangChain BaseMessage objects
         if hasattr(msg, "type"):
-            if msg.type in ("ai", "assistant"):
+            if msg.type in ("ai", "assistant", "AIMessage", "AIMessageChunk"):
                 content = msg.content if hasattr(msg, "content") else None
                 
         # 2. Raw dicts

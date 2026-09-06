@@ -27,6 +27,13 @@ class TestResolveOllamaRoute(unittest.TestCase):
         self.assertEqual(backend, "ollama")
         self.assertEqual(tag, ollama_client.default_ollama_model_tag())
 
+    def test_default_ollama_model_is_host_model(self) -> None:
+        self.assertEqual(ollama_client.DEFAULT_OLLAMA_MODEL, "qwen2.5:7b")
+        self.assertEqual(ollama_client.default_ollama_model_tag(), "qwen2.5:7b")
+
+    def test_default_embedding_model_is_local_ollama_model(self) -> None:
+        self.assertEqual(ollama_client.default_ollama_model_tag(), "qwen2.5:7b")
+
     def test_openrouter(self) -> None:
         backend, mid = ollama_client.resolve_ollama_route("google/gemma:free", "google/x:free")
         self.assertEqual(backend, "openrouter")
@@ -34,10 +41,10 @@ class TestResolveOllamaRoute(unittest.TestCase):
 
     def test_llm_provider_ollama(self) -> None:
         os.environ["LLM_PROVIDER"] = "ollama"
-        os.environ["OLLAMA_MODEL"] = "qwen3.5:4b-q4_K_M"
+        os.environ["OLLAMA_MODEL"] = "qwen2.5:7b"
         backend, tag = ollama_client.resolve_ollama_route("google/ignored:free", "google/x:free")
         self.assertEqual(backend, "ollama")
-        self.assertEqual(tag, "qwen3.5:4b-q4_K_M")
+        self.assertEqual(tag, "qwen2.5:7b")
 
     def test_ui_override_openrouter_beats_env_ollama(self) -> None:
         os.environ["LLM_PROVIDER"] = "ollama"
@@ -55,11 +62,11 @@ class TestResolveOllamaRoute(unittest.TestCase):
 
     def test_ui_override_ollama_remote_uses_remote_model_env(self) -> None:
         os.environ["OLLAMA_REMOTE_BASE_URL"] = "https://tunnel.example"
-        os.environ["OLLAMA_REMOTE_MODEL"] = "qwen3.5:4b"
+        os.environ["OLLAMA_REMOTE_MODEL"] = "qwen2.5:7b"
         with use_llm_provider("ollama_remote"):
             b, tag = ollama_client.resolve_ollama_route(None, "google/x")
-            self.assertEqual(b, "ollama")
-            self.assertEqual(tag, "qwen3.5:4b")
+            self.assertEqual(b, "ollama_remote")
+            self.assertEqual(tag, "qwen2.5:7b")
 
     def test_remote_http_settings_require_base_url(self) -> None:
         os.environ.pop("OLLAMA_REMOTE_BASE_URL", None)

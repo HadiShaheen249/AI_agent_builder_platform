@@ -85,9 +85,9 @@
                         <div class="option-group">
                             <label>LLM provider</label>
                             <select id="llmProviderSelect" title="Gemini (primary); OpenRouter cloud; Ollama local/remote">
-                                <option value="gemini" selected>Gemini (primary)</option>
+                                <option value="gemini">Gemini (primary)</option>
                                 <option value="openrouter">OpenRouter</option>
-                                <option value="ollama">Ollama (local)</option>
+                                <option value="ollama" selected>Ollama (local)</option>
                                 <option value="ollama_remote">Ollama (remote / tunnel)</option>
                             </select>
                         </div>
@@ -96,9 +96,9 @@
                             <select id="modelSelect">
                                 <option value="">Auto-select (recommended)</option>
                                 <option value="google/gemma-3-27b-it:free">Gemma 3 27B (Free)</option>
+                                <option value="qwen/qwen-2.5-7b-instruct:free">Qwen 2.5 7B Instruct (Free)</option>
                                 <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (Free)</option>
-                                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
-                                <option value="openai/gpt-4o">GPT-4o</option>
+                                <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
                             </select>
                         </div>
                         <div class="option-group">
@@ -148,9 +148,9 @@
                         <div class="option-group">
                             <label>LLM provider</label>
                             <select id="manualLlmProvider" title="Gemini (primary); OpenRouter; Ollama">
-                                <option value="gemini" selected>Gemini (primary)</option>
+                                <option value="gemini">Gemini (primary)</option>
                                 <option value="openrouter">OpenRouter</option>
-                                <option value="ollama">Ollama (local)</option>
+                                <option value="ollama" selected>Ollama (local)</option>
                                 <option value="ollama_remote">Ollama (remote)</option>
                             </select>
                         </div>
@@ -158,10 +158,9 @@
                             <label>Model</label>
                             <select id="manualModel">
                                 <option value="google/gemma-3-27b-it:free">Gemma 3 27B (Free)</option>
+                                <option value="qwen/qwen-2.5-7b-instruct:free">Qwen 2.5 7B Instruct (Free)</option>
                                 <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (Free)</option>
-                                <option value="qwen/qwen-2.5-coder-32b-instruct:free">Qwen2.5 32B Coder (Free)</option>
-                                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
-                                <option value="openai/gpt-4o">GPT-4o</option>
+                                <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
                             </select>
                         </div>
                     </div>
@@ -210,9 +209,9 @@
                         <div class="option-group">
                             <label>LLM provider</label>
                             <select id="wfLlmProvider" title="Applies to workflow planning and each sub-agent build">
-                                <option value="gemini" selected>Gemini (primary)</option>
+                                <option value="gemini">Gemini (primary)</option>
                                 <option value="openrouter">OpenRouter</option>
-                                <option value="ollama">Ollama (local)</option>
+                                <option value="ollama" selected>Ollama (local)</option>
                                 <option value="ollama_remote">Ollama (remote)</option>
                             </select>
                         </div>
@@ -231,6 +230,7 @@
                             <select id="wfModel">
                                 <option value="">Auto-select (recommended)</option>
                                 <option value="google/gemma-3-27b-it:free">Gemma 3 27B (Free)</option>
+                                <option value="qwen/qwen-2.5-7b-instruct:free">Qwen 2.5 7B Instruct (Free)</option>
                                 <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (Free)</option>
                             </select>
                         </div>

@@ -4,8 +4,8 @@ Local Ollama LLM client (OpenAI-compatible API).
 Uses POST {OLLAMA_BASE_URL}/v1/chat/completions (same shape as OpenRouter/OpenAI).
 
 Select Ollama either:
-- Per model id: prefix with `ollama:` e.g. `ollama:qwen3.5:4b-q4_K_M`
-- Globally: `LLM_PROVIDER=ollama` + `OLLAMA_MODEL` (defaults to qwen3.5:4b-q4_K_M)
+- Per model id: prefix with `ollama:` e.g. `ollama:qwen2.5:7b`
+- Globally: `LLM_PROVIDER=ollama` + `OLLAMA_MODEL` (defaults to qwen2.5:7b)
 - Per HTTP/API request: `use_llm_provider("ollama"|"ollama_remote"|"openrouter")` (dashboard + chat)
 - **Remote Ollama** (ngrok / other host): `LLM_PROVIDER=ollama_remote` or UI provider `ollama_remote`, plus:
   `OLLAMA_REMOTE_BASE_URL=https://your-tunnel.ngrok-free.app` (no `/v1` suffix),
@@ -28,7 +28,8 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_OLLAMA_MODEL = "qwen3.5:4b-q4_K_M"
+DEFAULT_OLLAMA_MODEL = "qwen2.5:7b"
+DEFAULT_OLLAMA_EMBEDDING_MODEL = "nomic-embed-text"
 
 _llm_provider_override: contextvars.ContextVar[str | None] = contextvars.ContextVar(
     "llm_provider_override",
@@ -65,6 +66,10 @@ def ollama_base_url() -> str:
 
 def default_ollama_model_tag() -> str:
     return os.getenv("OLLAMA_MODEL", DEFAULT_OLLAMA_MODEL).strip() or DEFAULT_OLLAMA_MODEL
+
+
+def default_ollama_embedding_model() -> str:
+    return os.getenv("OLLAMA_EMBEDDING_MODEL", DEFAULT_OLLAMA_EMBEDDING_MODEL).strip() or DEFAULT_OLLAMA_EMBEDDING_MODEL
 
 
 def default_remote_model_tag() -> str:
@@ -134,7 +139,7 @@ def resolve_ollama_route(explicit_model: str | None, fallback_default: str) -> t
 
     if override == "gemini":
         if not m or not m.startswith("gemini-"):
-            return "gemini", os.getenv("DEEPAGENT_MODEL", "gemini-3.1-flash-lite-preview")
+            return "gemini", os.getenv("DEEPAGENT_MODEL", "gemini-2.5-flash-lite")
         return "gemini", m
 
     if override == "ollama":

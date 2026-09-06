@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { api } from '@/lib/api'
-import { LLM_PROVIDERS, GEMINI_MODELS, OPENROUTER_MODELS } from '@/lib/constants'
+import { LLM_PROVIDERS, GEMINI_MODELS, OLLAMA_MODELS, OPENROUTER_MODELS } from '@/lib/constants'
 import { BackgroundOrbs } from '@/components/common/BackgroundOrbs'
 import type { AgentTemplate } from '@/types'
 
@@ -84,7 +84,7 @@ export function ChatPage() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [convId, setConvId] = useState<string | null>(null)
-  const [provider, setProvider] = useState('gemini')
+  const [provider, setProvider] = useState('ollama')
   const [model, setModel] = useState('')
   const messagesEnd = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -98,7 +98,7 @@ export function ChatPage() {
         system_prompt: d.system_prompt,
         mcps: d.selected_mcps,
         skills: d.selected_skills?.map((s: any) => s.skill_id) ?? [],
-        llm_provider: 'gemini',
+        llm_provider: 'ollama',
       })).catch(() => {})
     }
     if (importData) {
@@ -276,7 +276,7 @@ export function ChatPage() {
     }
   }, [input, sending, taskId, convId, provider, messages.length, scrollToBottom])
 
-  const models = provider === 'gemini' ? GEMINI_MODELS : OPENROUTER_MODELS
+  const models = provider === 'gemini' ? GEMINI_MODELS : provider === 'ollama' ? OLLAMA_MODELS : OPENROUTER_MODELS
 
   return (
     <div className="relative flex h-screen flex-col overflow-hidden">

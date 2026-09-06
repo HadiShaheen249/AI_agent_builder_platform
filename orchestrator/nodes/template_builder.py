@@ -26,10 +26,10 @@ Rules:
 - Build exactly ONE agent that covers the ENTIRE task.
 - agent_name: short descriptive name (e.g. "GitHub_Monitor", "Data_Analyst").
 - assigned_openrouter_model: pick ONE of these verified models based on task complexity:
-  simple/fast tasks  → "meta-llama/llama-3.1-8b-instruct:free"
-  medium tasks       → "qwen/qwen-2.5-coder-32b-instruct:free"
-  complex tasks      → "deepseek/deepseek-r1:free"
-  (Do NOT invent model names — use ONLY the three options above)
+  simple/fast tasks  → "ollama:qwen2.5:7b"
+  medium tasks       → "ollama:qwen2.5:7b"
+  complex tasks      → "ollama:qwen2.5:7b"
+  (Use the local Ollama model for all tasks unless a specific override is requested)
 - selected_mcps: include ONLY MCPs whose tools are directly needed. Use the "name" field from the list above.
 - selected_skills: include ALL skill_ids that are relevant to ANY part of the task.
 - system_prompt: 3-6 sentences. Describe the agent's role, what tools it has, when to use each tool, and how to approach the task step by step. Be specific — mention tool names and skill capabilities.
@@ -96,22 +96,35 @@ async def template_builder(state: AgentBuilderState) -> dict:
             for agent in result.get("agents", []):
                 agent["assigned_openrouter_model"] = preferred_model
 
-        # ---- Skills: LLM often drops skills for "filesystem-only" tasks; restore from pipeline ----
-        pipeline_skill_ids = [s["skill_id"] for s in selected_skills if s.get("skill_id")]
+        # ---- Enforce pipeline selections over model output ----
+        # The model may invent MCP or skill IDs even when the pipeline selected none.
+        pipeline_skill_ids = (
+            [s["skill_id"] for s in selected_skills if s.get("skill_id")]
+            if state.get("max_skills", len(selected_skills)) > 0
+            else []
+        )
+        allowed_mcp_names = {
+            m.get("mcp_name")
+            for m in running_mcps + selected_tools.get("mcps", [])
+            if m.get("mcp_name")
+        } if state.get("max_mcps", 0) > 0 else set()
         for agent in result.get("agents", []):
-            llm_skills = agent.get("selected_skills") or []
-            if not llm_skills and pipeline_skill_ids:
-                agent["selected_skills"] = list(pipeline_skill_ids)
-                logger.info(
-                    "  LLM template had no skills — injecting %d from AI Final Filter",
-                    len(pipeline_skill_ids),
-                )
+            agent["selected_skills"] = list(pipeline_skill_ids)
+            if not pipeline_skill_ids:
+                agent["selected_skills"] = []
+            elif not agent.get("selected_skills"):
+                logger.info("  LLM template had no skills — injecting pipeline selections")
 
         # ---- CRITICAL: Inject full MCP metadata ----
         # The LLM template only has {name, running_port} for MCPs.
         # We need to inject docker_image, run_config, tools_provided
         # from the pipeline state so the chat system can start containers.
         _inject_mcp_metadata(result, running_mcps, selected_tools.get("mcps", []))
+        for agent in result.get("agents", []):
+            agent["selected_mcps"] = [
+                m for m in agent.get("selected_mcps", [])
+                if (m.get("mcp_name") or m.get("name")) in allowed_mcp_names
+            ]
 
         # Add status
         result["status"] = "ready_for_user_approval"
@@ -128,7 +141,7 @@ async def template_builder(state: AgentBuilderState) -> dict:
         logger.error(f"Template builder failed: {e}")
         # Build a fallback template using FREE model
         import os
-        default_model = preferred_model or os.getenv("DEFAULT_CHAT_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
+        default_model = preferred_model or os.getenv("DEFAULT_CHAT_MODEL", "ollama:qwen2.5:7b")
         
         # Build full MCP entries for the fallback
         all_mcps = running_mcps + selected_tools.get("mcps", [])

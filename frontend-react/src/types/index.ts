@@ -12,7 +12,7 @@ export interface MCP {
   tools_provided: MCPTool[]
   category: string
   run_config: Record<string, unknown>
-  requires_config: boolean
+  requires_user_config: boolean
   config_schema: unknown[]
   is_active: boolean
   has_embedding: boolean

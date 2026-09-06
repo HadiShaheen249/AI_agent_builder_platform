@@ -102,7 +102,7 @@ async def gemini_chat_completion(
 OPENROUTER_BASE_URL = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_API_KEY_BACKUP = os.getenv("OPENROUTER_API_KEY_BACKUP", "")
-DEFAULT_CHAT_MODEL = os.getenv("DEFAULT_CHAT_MODEL", "meta-llama/llama-3.1-8b-instruct:free")
+DEFAULT_CHAT_MODEL = os.getenv("DEFAULT_CHAT_MODEL", "ollama:qwen2.5:7b")
 
 # All available API keys (primary + backup) for rotation on 429
 _API_KEYS: list[str] = [k for k in [OPENROUTER_API_KEY, OPENROUTER_API_KEY_BACKUP] if k]
@@ -117,7 +117,7 @@ FREE_MODEL_CHAIN: list[str] = [
     "google/gemma-3-27b-it:free",
 ]
 PAID_FALLBACK_CHAIN: list[str] = [
-    "google/gemini-2.0-flash-001",
+    "google/gemini-2.5-flash",
     "openai/gpt-4o-mini",
     "anthropic/claude-3-haiku",
 ]

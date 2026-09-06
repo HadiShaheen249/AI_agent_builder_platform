@@ -16,6 +16,16 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+# Required by the MCP seed statements below.
+    # Migration 004 also uses IF NOT EXISTS, so this remains safe.
+    op.execute(
+        "ALTER TABLE mcps ADD COLUMN IF NOT EXISTS "
+        "requires_user_config BOOLEAN DEFAULT false"
+    )
+    op.execute(
+        "ALTER TABLE mcps ADD COLUMN IF NOT EXISTS "
+        "config_schema JSONB DEFAULT '[]'::jsonb"
+    )
     op.execute(
         """
 INSERT INTO mcps (mcp_name, docker_image, description, tools_provided, category, run_config)

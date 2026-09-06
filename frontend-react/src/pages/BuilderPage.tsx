@@ -10,7 +10,7 @@ import {
 import { cn } from '@/lib/utils'
 import { useBuildStore, useCatalogStore } from '@/stores/buildStore'
 import { api } from '@/lib/api'
-import { LLM_PROVIDERS, GEMINI_MODELS, OPENROUTER_MODELS, TOPOLOGIES, PIPELINE_NODES } from '@/lib/constants'
+import { LLM_PROVIDERS, GEMINI_MODELS, OLLAMA_MODELS, OPENROUTER_MODELS, TOPOLOGIES, PIPELINE_NODES } from '@/lib/constants'
 import type { MCP } from '@/types'
 
 /* ───────────────────────────────────────────── */
@@ -61,7 +61,7 @@ export function BuilderPage() {
 
   /* ── AI Build state ── */
   const [query, setQuery] = useState('')
-  const [provider, setProvider] = useState('gemini')
+  const [provider, setProvider] = useState('ollama')
   const [model, setModel] = useState('')
   const [maxMcps, setMaxMcps] = useState('5')
   const [maxSkills, setMaxSkills] = useState('8')
@@ -69,7 +69,7 @@ export function BuilderPage() {
 
   /* ── Manual Build state ── */
   const [manualName, setManualName] = useState('Custom_Agent')
-  const [manualProvider, setManualProvider] = useState('gemini')
+  const [manualProvider, setManualProvider] = useState('ollama')
   const [manualModel, setManualModel] = useState('')
   const [manualPrompt, setManualPrompt] = useState('You are a helpful AI assistant. Use your tools when needed to complete tasks.')
   const [selectedMCPs, setSelectedMCPs] = useState<number[]>([])
@@ -79,7 +79,7 @@ export function BuilderPage() {
 
   /* ── Workflow Build state ── */
   const [wfQuery, setWfQuery] = useState('')
-  const [wfProvider, setWfProvider] = useState('gemini')
+  const [wfProvider, setWfProvider] = useState('ollama')
   const [wfModel, setWfModel] = useState('')
   const [wfTopology, setWfTopology] = useState('auto')
   const [wfMaxMcps, setWfMaxMcps] = useState('3')
@@ -107,9 +107,9 @@ export function BuilderPage() {
     return () => clearInterval(id)
   }, [taskId, building, pollPipeline])
 
-  const models = provider === 'gemini' ? GEMINI_MODELS : OPENROUTER_MODELS
-  const manualModels = manualProvider === 'gemini' ? GEMINI_MODELS : OPENROUTER_MODELS
-  const wfModels = wfProvider === 'gemini' ? GEMINI_MODELS : OPENROUTER_MODELS
+  const models = provider === 'gemini' ? GEMINI_MODELS : provider === 'ollama' ? OLLAMA_MODELS : OPENROUTER_MODELS
+  const manualModels = manualProvider === 'gemini' ? GEMINI_MODELS : manualProvider === 'ollama' ? OLLAMA_MODELS : OPENROUTER_MODELS
+  const wfModels = wfProvider === 'gemini' ? GEMINI_MODELS : wfProvider === 'ollama' ? OLLAMA_MODELS : OPENROUTER_MODELS
 
   /* ── Handlers ── */
   const handleAIBuild = useCallback(async () => {
@@ -130,7 +130,7 @@ export function BuilderPage() {
     try {
       await submitManualBuild({
         agent_name: manualName, llm_provider: manualProvider,
-        model: manualModel || 'gemini-2.0-flash',
+        model: manualModel || 'qwen2.5:7b',
         system_prompt: manualPrompt,
         selected_mcp_ids: selectedMCPs,
         selected_skill_ids: selectedSkills,

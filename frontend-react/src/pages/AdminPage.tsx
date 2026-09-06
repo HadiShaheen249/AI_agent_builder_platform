@@ -30,11 +30,11 @@ export function AdminPage() {
   })
 
   const openAdd = () => { setEditId(null); setForm({ name: '', image: '', desc: '', category: '', tools: '[]', runConfig: '{"transport":"stdio","stdin_open":true,"command":[],"volumes":{},"environment":{}}', requiresConfig: false, configSchema: '[]' }); setModalOpen(true) }
-  const openEdit = (m: MCP) => { setEditId(m.id); setForm({ name: m.mcp_name, image: m.docker_image, desc: m.description, category: m.category, tools: JSON.stringify(m.tools_provided, null, 2), runConfig: JSON.stringify(m.run_config, null, 2), requiresConfig: m.requires_config, configSchema: JSON.stringify(m.config_schema || [], null, 2) }); setModalOpen(true) }
+  const openEdit = (m: MCP) => { setEditId(m.id); setForm({ name: m.mcp_name, image: m.docker_image, desc: m.description, category: m.category, tools: JSON.stringify(m.tools_provided, null, 2), runConfig: JSON.stringify(m.run_config, null, 2), requiresConfig: m.requires_user_config, configSchema: JSON.stringify(m.config_schema || [], null, 2) }); setModalOpen(true) }
 
   const saveMCP = async () => {
     try {
-      const body = { mcp_name: form.name, docker_image: form.image, description: form.desc, category: form.category, tools_provided: JSON.parse(form.tools), run_config: JSON.parse(form.runConfig), requires_config: form.requiresConfig, config_schema: JSON.parse(form.configSchema) }
+      const body = { mcp_name: form.name, docker_image: form.image, description: form.desc, category: form.category, tools_provided: JSON.parse(form.tools), run_config: JSON.parse(form.runConfig), requires_user_config: form.requiresConfig, config_schema: JSON.parse(form.configSchema) }
       if (editId) { await api.put(`/admin/mcps/${editId}`, body) } else { await api.post('/admin/mcps', body) }
       toast.success(editId ? 'MCP updated' : 'MCP added')
       setModalOpen(false); loadMCPs()
